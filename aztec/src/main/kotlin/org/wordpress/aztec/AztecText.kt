@@ -105,7 +105,6 @@ import org.wordpress.aztec.watchers.DeleteMediaElementWatcherAPI25AndHigher
 import org.wordpress.aztec.watchers.DeleteMediaElementWatcherPreAPI25
 import org.wordpress.aztec.watchers.EndOfBufferMarkerAdder
 import org.wordpress.aztec.watchers.EndOfParagraphMarkerAdder
-import org.wordpress.aztec.watchers.EnterPressedWatcher
 import org.wordpress.aztec.watchers.FullWidthImageElementWatcher
 import org.wordpress.aztec.watchers.InlineTextWatcher
 import org.wordpress.aztec.watchers.ParagraphBleedAdjuster
@@ -601,7 +600,7 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
                 .add(HeadingHandler())
                 .add(ListHandler(this))
                 .add(ListItemHandler())
-                .add(QuoteHandler())
+                .add(QuoteHandler(this))
                 .add(PreformatHandler(this))
                 .install(this)
 
@@ -778,7 +777,7 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
     }
 
     override fun onSaveInstanceState(): Parcelable {
-        val superState = super.onSaveInstanceState()
+        val superState = super.onSaveInstanceState() as SavedState
         val savedState = SavedState(superState)
         val bundle = Bundle()
         InstanceStateUtils.writeTempInstance(context, externalLogger, HISTORY_LIST_KEY, ArrayList<String>(history.historyList), bundle)
@@ -1808,7 +1807,7 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
 
         unknownBlockSpanStart = text.getSpanStart(unknownHtmlSpan)
         blockEditorDialog = builder.create()
-        blockEditorDialog!!.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+        blockEditorDialog!!.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         blockEditorDialog!!.show()
     }
 

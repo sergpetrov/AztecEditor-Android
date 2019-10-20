@@ -13,6 +13,7 @@ import org.wordpress.aztec.ITextFormat
 import org.wordpress.aztec.handlers.BlockHandler
 import org.wordpress.aztec.handlers.HeadingHandler
 import org.wordpress.aztec.handlers.ListItemHandler
+import org.wordpress.aztec.spans.AztecAsideSpan
 import org.wordpress.aztec.spans.AztecHeadingSpan
 import org.wordpress.aztec.spans.AztecListItemSpan
 import org.wordpress.aztec.spans.AztecListSpan
