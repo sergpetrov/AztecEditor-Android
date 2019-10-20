@@ -105,6 +105,7 @@ import org.wordpress.aztec.watchers.DeleteMediaElementWatcherAPI25AndHigher
 import org.wordpress.aztec.watchers.DeleteMediaElementWatcherPreAPI25
 import org.wordpress.aztec.watchers.EndOfBufferMarkerAdder
 import org.wordpress.aztec.watchers.EndOfParagraphMarkerAdder
+import org.wordpress.aztec.watchers.EnterPressedWatcher
 import org.wordpress.aztec.watchers.FullWidthImageElementWatcher
 import org.wordpress.aztec.watchers.InlineTextWatcher
 import org.wordpress.aztec.watchers.ParagraphBleedAdjuster
@@ -240,6 +241,7 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
     private var onMediaDeletedListener: OnMediaDeletedListener? = null
     private var onVideoInfoRequestedListener: OnVideoInfoRequestedListener? = null
     private var onAztecKeyListener: OnAztecKeyListener? = null
+    private var onEnterForBlockListener: OnEnterForBlockListener? = null
     var externalLogger: AztecLog.ExternalLogger? = null
 
     private var isViewInitialized = false
@@ -333,6 +335,10 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
 
     interface OnLinkTappedListener {
         fun onLinkTapped(widget: View, url: String)
+    }
+
+    interface OnEnterForBlockListener {
+        fun onEnterKey() : Boolean
     }
 
     constructor(context: Context) : super(context) {
@@ -509,7 +515,9 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
             temp
         }
 
-        val emptyEditTextBackspaceDetector = InputFilter { source, start, end, dest, dstart, dend ->
+        //software keyboard InputFilter(s) below
+       /* TODO unnecessary now because it breaks style of empty block after paste action
+       val emptyEditTextBackspaceDetector = InputFilter { source, start, end, dest, dstart, dend ->
             if (selectionStart == 0 && selectionEnd == 0
                     && end == 0 && start == 0
                     && dstart == 0 && dend == 0
@@ -531,6 +539,7 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
         } else {
             filters = arrayOf(emptyEditTextBackspaceDetector)
         }
+         */
     }
 
     private fun handleBackspaceAndEnter(event: KeyEvent): Boolean {
@@ -556,7 +565,8 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
             if (!consumeHistoryEvent) {
                 history.beforeTextChanged(this@AztecText)
             }
-            wasStyleRemoved = blockFormatter.tryRemoveBlockStyleFromFirstLine()
+            // TODO not need for now
+            // wasStyleRemoved = blockFormatter.tryRemoveBlockStyleFromFirstLine()
 
             if (selectionStart == 0 || selectionEnd == 0) {
                 deleteInlineStyleFromTheBeginning()
@@ -589,10 +599,10 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
 
         BlockElementWatcher(this)
                 .add(HeadingHandler())
-                .add(ListHandler())
+                .add(ListHandler(this))
                 .add(ListItemHandler())
                 .add(QuoteHandler())
-                .add(PreformatHandler())
+                .add(PreformatHandler(this))
                 .install(this)
 
         TextDeleter.install(this)
@@ -609,7 +619,7 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
         }
 
         // History related logging has to happen before the changes in [ParagraphCollapseRemover]
-        addHistoryLoggingWatcher()
+        //addHistoryLoggingWatcher()
         ParagraphCollapseRemover.install(this)
 
         // finally add the TextChangedListener
@@ -862,6 +872,14 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
      */
     fun setAztecKeyListener(listenerAztec: OnAztecKeyListener) {
         this.onAztecKeyListener = listenerAztec
+    }
+
+    fun getOnEnterForBlockListener(): OnEnterForBlockListener? {
+        return onEnterForBlockListener
+    }
+
+    fun setOnEnterForBlockListener(listener: OnEnterForBlockListener) {
+        this.onEnterForBlockListener = listener
     }
 
     fun setOnImeBackListener(listener: OnImeBackListener) {
@@ -1188,7 +1206,8 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
         val parser = AztecParser(plugins)
 
         var cleanSource = CleaningUtils.cleanNestedBoldTags(source)
-        cleanSource = Format.removeSourceEditorFormatting(cleanSource, isInCalypsoMode, isInGutenbergMode)
+        // TODO it's removing breakline at the end of string
+        // cleanSource = Format.removeSourceEditorFormatting(cleanSource, isInCalypsoMode)
         builder.append(parser.fromHtml(cleanSource, context))
 
         Format.preProcessSpannedText(builder, isInCalypsoMode)
@@ -1541,12 +1560,15 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
         var clipboardIdentifier = resources.getIdentifier("android:id/clipboard", "id", context.packageName)
 
         when (id) {
-            android.R.id.paste -> paste(text, min, max)
+            // android.R.id.paste -> paste(text, min, max)
+            // TODO we need plain text only for now
+            android.R.id.paste -> paste(text, min, max, true)
             android.R.id.pasteAsPlainText -> paste(text, min, max, true)
+            /* TODO we need plain text only for now
             android.R.id.copy -> {
                 copy(text, min, max)
                 setSelection(max) // dismiss the selection to make the action menu hide
-            }
+            }*/
             android.R.id.cut -> {
                 copy(text, min, max)
                 text.delete(min, max) // this will hide text action menu

@@ -566,7 +566,11 @@ class AztecParser @JvmOverloads constructor(val plugins: List<IAztecPlugin> = li
                 continue
             }
 
-            out.append("<br>")
+            if (text.length == 2 && text.toString().contains(Constants.NEWLINE)) {
+                out.append("<br>")
+            } else {
+                out.append(Constants.NEWLINE)
+            }
             consumeCursorIfInInput(out, text, end + z)
         }
     }
@@ -648,12 +652,13 @@ class AztecParser @JvmOverloads constructor(val plugins: List<IAztecPlugin> = li
     }
 
     private fun tidy(html: String): String {
+        // TODO we not need tidy for now tidy(source)
         return html
-                .replace(Constants.ZWJ_STRING, "")
-                .replace(Constants.MAGIC_STRING, "")
-                .replace("(</? ?br>)*((aztec_cursor)?)</blockquote>".toRegex(), "$2</blockquote>")
-                .replace("(</? ?br>)*((aztec_cursor)?)</li>".toRegex(), "$2</li>")
-                .replace("(</? ?br>)*((aztec_cursor)?)</p>".toRegex(), "$2</p>")
-                .replace("(</? ?br>)*((aztec_cursor)?)</pre>".toRegex(), "$2</pre>")
+        /*.replace(Constants.ZWJ_STRING, "")
+        .replace(Constants.MAGIC_STRING, "")
+        .replace("(</? ?br>)*((aztec_cursor)?)</blockquote>".toRegex(), "$2</blockquote>")
+        .replace("(</? ?br>)*((aztec_cursor)?)</li>".toRegex(), "$2</li>")
+        .replace("(</? ?br>)*((aztec_cursor)?)</p>".toRegex(), "$2</p>")
+        .replace("(</? ?br>)*((aztec_cursor)?)</pre>".toRegex(), "$2</pre>")*/
     }
 }

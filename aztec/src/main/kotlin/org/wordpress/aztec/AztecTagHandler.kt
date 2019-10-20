@@ -28,6 +28,7 @@ import android.text.Editable
 import android.text.Spanned
 import org.wordpress.aztec.plugins.IAztecPlugin
 import org.wordpress.aztec.plugins.html2visual.IHtmlTagHandler
+import org.wordpress.aztec.spans.AztecAsideSpan
 import org.wordpress.aztec.spans.AztecAudioSpan
 import org.wordpress.aztec.spans.AztecHeadingSpan
 import org.wordpress.aztec.spans.AztecHorizontalRuleSpan
@@ -97,6 +98,10 @@ class AztecTagHandler(val context: Context, val plugins: List<IAztecPlugin> = Ar
             }
             BLOCKQUOTE -> {
                 handleElement(output, opening, AztecQuoteSpan(nestingLevel, AztecAttributes(attributes)))
+                return true
+            }
+            ASIDE -> {
+                handleElement(output, opening, AztecAsideSpan(nestingLevel, AztecAttributes(attributes)))
                 return true
             }
             IMAGE -> {
@@ -231,6 +236,7 @@ class AztecTagHandler(val context: Context, val plugins: List<IAztecPlugin> = Ar
         private val FIGCAPTION = "figcaption"
         private val SECTION = "section"
         private val BLOCKQUOTE = "blockquote"
+        private val ASIDE = "aside"
         private val PARAGRAPH = "p"
         private val PREFORMAT = "pre"
         private val IMAGE = "img"

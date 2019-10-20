@@ -19,15 +19,17 @@ class LinkFormatter(editor: AztecText, val linkStyle: LinkStyle) : AztecFormatte
         return !urlSpans.isEmpty()
     }
 
-    fun getSelectedUrlWithAnchor(): Triple<String, String, Boolean> {
-        val url: String
-        var anchor: String
+    fun getSelectedUrlWithAnchor(ignoreUrlFromClipboard: Boolean = false): Triple<String, String, Boolean> {
+        var url = ""
+        var anchor = ""
         var openInNewWindow = false
 
         if (!isUrlSelected()) {
-            val clipboardUrl = getUrlFromClipboard(editor.context)
+            if (!ignoreUrlFromClipboard) {
+                val clipboardUrl = getUrlFromClipboard(editor.context)
 
-            url = if (TextUtils.isEmpty(clipboardUrl)) "" else clipboardUrl
+                url = if (TextUtils.isEmpty(clipboardUrl)) "" else clipboardUrl
+            }
             anchor = if (selectionStart == selectionEnd) "" else editor.getSelectedText()
         } else {
             val urlSpan = editableText.getSpans(selectionStart, selectionEnd, AztecURLSpan::class.java).first()

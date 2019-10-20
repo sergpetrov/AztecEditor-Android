@@ -286,6 +286,7 @@ class BlockFormatter(editor: AztecText, val listStyle: ListStyle, val quoteStyle
             AztecTextFormat.FORMAT_ORDERED_LIST -> return Arrays.asList(AztecOrderedListSpan(nestingLevel, attrs, listStyle), AztecListItemSpan(nestingLevel + 1))
             AztecTextFormat.FORMAT_UNORDERED_LIST -> return Arrays.asList(AztecUnorderedListSpan(nestingLevel, attrs, listStyle), AztecListItemSpan(nestingLevel + 1))
             AztecTextFormat.FORMAT_QUOTE -> return Arrays.asList(AztecQuoteSpan(nestingLevel, attrs, quoteStyle))
+            AztecTextFormat.FORMAT_ASIDE -> return Arrays.asList(AztecAsideSpan(nestingLevel, attrs))
             AztecTextFormat.FORMAT_HEADING_1,
             AztecTextFormat.FORMAT_HEADING_2,
             AztecTextFormat.FORMAT_HEADING_3,
@@ -314,6 +315,7 @@ class BlockFormatter(editor: AztecText, val listStyle: ListStyle, val quoteStyle
             AztecTextFormat.FORMAT_ORDERED_LIST -> makeBlockSpan(AztecOrderedListSpan::class.java, textFormat, nestingLevel, attrs)
             AztecTextFormat.FORMAT_UNORDERED_LIST -> makeBlockSpan(AztecUnorderedListSpan::class.java, textFormat, nestingLevel, attrs)
             AztecTextFormat.FORMAT_QUOTE -> makeBlockSpan(AztecQuoteSpan::class.java, textFormat, nestingLevel, attrs)
+            AztecTextFormat.FORMAT_ASIDE -> makeBlockSpan(AztecAsideSpan::class.java, textFormat, nestingLevel, attrs)
             AztecTextFormat.FORMAT_HEADING_1,
             AztecTextFormat.FORMAT_HEADING_2,
             AztecTextFormat.FORMAT_HEADING_3,
@@ -321,7 +323,7 @@ class BlockFormatter(editor: AztecText, val listStyle: ListStyle, val quoteStyle
             AztecTextFormat.FORMAT_HEADING_5,
             AztecTextFormat.FORMAT_HEADING_6 -> makeBlockSpan(AztecHeadingSpan::class.java, textFormat, nestingLevel, attrs)
             AztecTextFormat.FORMAT_PREFORMAT -> makeBlockSpan(AztecPreformatSpan::class.java, textFormat, nestingLevel, attrs)
-            else -> createParagraphSpan(nestingLevel, attrs)
+            else -> ParagraphSpan(nestingLevel, attrs)
         }
     }
 
@@ -331,6 +333,7 @@ class BlockFormatter(editor: AztecText, val listStyle: ListStyle, val quoteStyle
             AztecUnorderedListSpan::class.java -> AztecUnorderedListSpan(nestingLevel, attrs, listStyle)
             AztecListItemSpan::class.java -> AztecListItemSpan(nestingLevel, attrs)
             AztecQuoteSpan::class.java -> AztecQuoteSpan(nestingLevel, attrs, quoteStyle)
+            AztecAsideSpan::class.java -> AztecAsideSpan(nestingLevel, attrs)
             AztecHeadingSpan::class.java -> AztecHeadingSpan(nestingLevel, textFormat, attrs, headerStyle)
             AztecPreformatSpan::class.java -> AztecPreformatSpan(nestingLevel, attrs, preformatStyle)
             else -> createParagraphSpan(nestingLevel, attrs)
@@ -625,6 +628,7 @@ class BlockFormatter(editor: AztecText, val listStyle: ListStyle, val quoteStyle
             is AztecOrderedListSpan -> applyListBlock(blockSpan, start, end)
             is AztecUnorderedListSpan -> applyListBlock(blockSpan, start, end)
             is AztecQuoteSpan -> applyQuote(blockSpan, start, end)
+            is AztecAsideSpan -> applyAside(blockSpan, start, end)
             is AztecHeadingSpan -> applyHeadingBlock(blockSpan, start, end)
             is AztecPreformatSpan -> BlockHandler.set(editableText, blockSpan, start, end)
             else -> editableText.setSpan(blockSpan, start, end, Spanned.SPAN_PARAGRAPH)
@@ -632,6 +636,10 @@ class BlockFormatter(editor: AztecText, val listStyle: ListStyle, val quoteStyle
     }
 
     private fun applyQuote(blockSpan: AztecQuoteSpan, start: Int, end: Int) {
+        BlockHandler.set(editableText, blockSpan, start, end)
+    }
+
+    private fun applyAside(blockSpan: AztecAsideSpan, start: Int, end: Int) {
         BlockHandler.set(editableText, blockSpan, start, end)
     }
 

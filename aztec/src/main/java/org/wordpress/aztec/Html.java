@@ -406,7 +406,8 @@ class HtmlToSpannedConverter implements org.xml.sax.ContentHandler, LexicalHandl
         }
 
         if (tag.equalsIgnoreCase("br")) {
-            handleBr(spannableStringBuilder);
+            // TODO it's not needed for now
+            // handleBr(spannableStringBuilder);
         } else if (tag.equalsIgnoreCase("strong")) {
             end(spannableStringBuilder, AztecTextFormat.FORMAT_STRONG);
         } else if (tag.equalsIgnoreCase("b")) {
@@ -733,9 +734,12 @@ class HtmlToSpannedConverter implements org.xml.sax.ContentHandler, LexicalHandl
                     pred = sb.charAt(len - 1);
                 }
 
-                if (pred != ' ' && pred != '\n') {
+                if (c == '\n') {
+                    sb.append('\n');
+                } else if (pred != ' ' && pred != '\n') {
                     sb.append(' ');
                 }
+
             } else {
                 sb.append(c);
             }

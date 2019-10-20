@@ -1,16 +1,20 @@
 package org.wordpress.aztec.handlers
 
+import org.wordpress.aztec.AztecText
 import org.wordpress.aztec.spans.IAztecBlockSpan
 import org.wordpress.aztec.watchers.BlockElementWatcher
 import org.wordpress.aztec.watchers.TextDeleter
+import java.lang.ref.WeakReference
 
 /**
  * A general html block editing handler that closes when a newline is entered at an empty line ("double-enter").
  * If completely empty, the whole block is removed with double-enter.
  */
-open class GenericBlockHandler<T : IAztecBlockSpan>(clazz: Class<T>) : BlockHandler<T>(clazz) {
+open class GenericBlockHandler<T : IAztecBlockSpan>(clazz: Class<T>, aztecText: AztecText) : BlockHandler<T>(clazz) {
     // fun handleNewlineAtStartOfBlock()
     // nothing special to do
+
+    protected val aztecTextRef: WeakReference<AztecText?> = WeakReference(aztecText)
 
     override fun handleNewlineAtEmptyLineAtBlockEnd() {
         // adjust the block end to only include the chars before the newline just added
@@ -21,14 +25,18 @@ open class GenericBlockHandler<T : IAztecBlockSpan>(clazz: Class<T>) : BlockHand
 
         // re-play the newline so parent blocks can process it now that the current block has retracted before it
         BlockElementWatcher.replay(text, newlineIndex)
+
+        aztecTextRef.get()?.getOnEnterForBlockListener()?.onEnterKey()
     }
 
     override fun handleNewlineAtEmptyBody() {
         // block is empty so, remove it
-        block.remove()
+       /* block.remove()*/
 
         // delete the newline
         TextDeleter.mark(text, newlineIndex, newlineIndex + 1)
+
+        aztecTextRef.get()?.getOnEnterForBlockListener()?.onEnterKey()
     }
 
     // fun handleNewlineAtTextEnd()

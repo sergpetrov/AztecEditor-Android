@@ -12,7 +12,7 @@ open class AztecStyleSpan(style: Int, override var attributes: AztecAttributes =
                 return@lazy "b"
             }
             Typeface.ITALIC -> {
-                return@lazy "i"
+                return@lazy "em"
             }
         }
         throw IllegalArgumentException()
