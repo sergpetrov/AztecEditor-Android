@@ -26,17 +26,17 @@ open class GenericBlockHandler<T : IAztecBlockSpan>(clazz: Class<T>, aztecText: 
         // re-play the newline so parent blocks can process it now that the current block has retracted before it
         BlockElementWatcher.replay(text, newlineIndex)
 
-        aztecTextRef.get()?.getOnEnterForBlockListener()?.onEnterKey()
+        aztecTextRef.get()?.getOnEnterForBlockListener()?.onEnterKey(false)
     }
 
     override fun handleNewlineAtEmptyBody() {
         // block is empty so, remove it
-       /* block.remove()*/
+        block.remove()
 
         // delete the newline
         TextDeleter.mark(text, newlineIndex, newlineIndex + 1)
 
-        aztecTextRef.get()?.getOnEnterForBlockListener()?.onEnterKey()
+        aztecTextRef.get()?.getOnEnterForBlockListener()?.onEnterKey(true)
     }
 
     // fun handleNewlineAtTextEnd()

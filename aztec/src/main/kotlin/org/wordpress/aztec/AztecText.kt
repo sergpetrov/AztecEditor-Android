@@ -337,7 +337,7 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
     }
 
     interface OnEnterForBlockListener {
-        fun onEnterKey() : Boolean
+        fun onEnterKey(isEmpty: Boolean) : Boolean
     }
 
     constructor(context: Context) : super(context) {
@@ -777,7 +777,7 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
     }
 
     override fun onSaveInstanceState(): Parcelable {
-        val superState = super.onSaveInstanceState() as SavedState
+        val superState = super.onSaveInstanceState()
         val savedState = SavedState(superState)
         val bundle = Bundle()
         InstanceStateUtils.writeTempInstance(context, externalLogger, HISTORY_LIST_KEY, ArrayList<String>(history.historyList), bundle)
