@@ -1559,15 +1559,12 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
         var clipboardIdentifier = resources.getIdentifier("android:id/clipboard", "id", context.packageName)
 
         when (id) {
-            // android.R.id.paste -> paste(text, min, max)
-            // TODO we need plain text only for now
-            android.R.id.paste -> paste(text, min, max, true)
+            android.R.id.paste -> paste(text, min, max)
             android.R.id.pasteAsPlainText -> paste(text, min, max, true)
-            /* TODO we need plain text only for now
             android.R.id.copy -> {
                 copy(text, min, max)
                 setSelection(max) // dismiss the selection to make the action menu hide
-            }*/
+            }
             android.R.id.cut -> {
                 copy(text, min, max)
                 text.delete(min, max) // this will hide text action menu
@@ -1667,7 +1664,7 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
                 val oldHtml = toPlainHtml().replace("<aztec_cursor>", "")
                 val newHtml = oldHtml.replace(Constants.REPLACEMENT_MARKER_STRING, textToPaste + "<" + AztecCursorSpan.AZTEC_CURSOR_TAG + ">")
 
-                fromHtml(newHtml, false)
+                fromHtml("<p>$newHtml</p>", false)
                 inlineFormatter.joinStyleSpans(0, length())
             }
         }
