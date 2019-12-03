@@ -241,6 +241,7 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
     private var onVideoInfoRequestedListener: OnVideoInfoRequestedListener? = null
     private var onAztecKeyListener: OnAztecKeyListener? = null
     private var onEnterForBlockListener: OnEnterForBlockListener? = null
+    private var onCopyPasteListener: OnCopyPasteListener? = null
     var externalLogger: AztecLog.ExternalLogger? = null
 
     private var isViewInitialized = false
@@ -338,6 +339,10 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
 
     interface OnEnterForBlockListener {
         fun onEnterKey(isEmpty: Boolean) : Boolean
+    }
+
+    interface OnCopyPasteListener {
+        fun onPaste(html: String)
     }
 
     constructor(context: Context) : super(context) {
@@ -879,6 +884,14 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
 
     fun setOnEnterForBlockListener(listener: OnEnterForBlockListener) {
         this.onEnterForBlockListener = listener
+    }
+
+    fun getOnCopyPasteListener(): OnCopyPasteListener? {
+        return onCopyPasteListener
+    }
+
+    fun setOnCopyPasteListener(listener: OnCopyPasteListener) {
+        this.onCopyPasteListener = listener
     }
 
     fun setOnImeBackListener(listener: OnImeBackListener) {
@@ -1628,44 +1641,67 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
         val clip = clipboard.primaryClip
 
         if (clip != null) {
-            history.beforeTextChanged(this@AztecText)
+            if (onCopyPasteListener != null) {
+                disableTextChangedListener()
 
-            disableTextChangedListener()
+                val length = text.length
+                if (min == 0 &&
+                        (max == length || (length == 1 && text.toString() == Constants.END_OF_BUFFER_MARKER_STRING))) {
+                    setText("")
+                } else {
+                    // prevent changes here from triggering the crash preventer
+                    disableCrashPreventerInputFilter()
+                    editable.delete(min, max)
+                    editable.insert(min, "")
+                    enableCrashPreventerInputFilter()
+                }
 
-            val length = text.length
-            if (min == 0 &&
-                    (max == length || (length == 1 && text.toString() == Constants.END_OF_BUFFER_MARKER_STRING))) {
-                setText(Constants.REPLACEMENT_MARKER_STRING)
+                if (clip.itemCount > 0) {
+                    val textToPaste = if (asPlainText) clip.getItemAt(0).coerceToText(context).toString()
+                    else clip.getItemAt(0).coerceToHtmlText(AztecParser(plugins))
+
+                    onCopyPasteListener?.onPaste(textToPaste)
+                }
             } else {
-                // prevent changes here from triggering the crash preventer
-                disableCrashPreventerInputFilter()
-                editable.delete(min, max)
-                editable.insert(min, Constants.REPLACEMENT_MARKER_STRING)
-                enableCrashPreventerInputFilter()
-            }
+                history.beforeTextChanged(this@AztecText)
 
-            // don't let the pasted text be included in any existing style
-            editable.getSpans(min, min + 1, Object::class.java)
-                    .filter { editable.getSpanStart(it) != editable.getSpanEnd(it) && it !is IAztecBlockSpan }
-                    .forEach {
-                        if (editable.getSpanStart(it) == min) {
-                            editable.setSpan(it, min + 1, editable.getSpanEnd(it), editable.getSpanFlags(it))
-                        } else if (editable.getSpanEnd(it) == min + 1) {
-                            editable.setSpan(it, editable.getSpanStart(it), min, editable.getSpanFlags(it))
+                disableTextChangedListener()
+
+                val length = text.length
+                if (min == 0 &&
+                        (max == length || (length == 1 && text.toString() == Constants.END_OF_BUFFER_MARKER_STRING))) {
+                    setText(Constants.REPLACEMENT_MARKER_STRING)
+                } else {
+                    // prevent changes here from triggering the crash preventer
+                    disableCrashPreventerInputFilter()
+                    editable.delete(min, max)
+                    editable.insert(min, Constants.REPLACEMENT_MARKER_STRING)
+                    enableCrashPreventerInputFilter()
+                }
+
+                // don't let the pasted text be included in any existing style
+                editable.getSpans(min, min + 1, Object::class.java)
+                        .filter { editable.getSpanStart(it) != editable.getSpanEnd(it) && it !is IAztecBlockSpan }
+                        .forEach {
+                            if (editable.getSpanStart(it) == min) {
+                                editable.setSpan(it, min + 1, editable.getSpanEnd(it), editable.getSpanFlags(it))
+                            } else if (editable.getSpanEnd(it) == min + 1) {
+                                editable.setSpan(it, editable.getSpanStart(it), min, editable.getSpanFlags(it))
+                            }
                         }
-                    }
 
-            enableTextChangedListener()
+                enableTextChangedListener()
 
-            if (clip.itemCount > 0) {
-                val textToPaste = if (asPlainText) clip.getItemAt(0).coerceToText(context).toString()
-                else clip.getItemAt(0).coerceToHtmlText(AztecParser(plugins))
+                if (clip.itemCount > 0) {
+                    val textToPaste = if (asPlainText) clip.getItemAt(0).coerceToText(context).toString()
+                    else clip.getItemAt(0).coerceToHtmlText(AztecParser(plugins))
 
-                val oldHtml = toPlainHtml().replace("<aztec_cursor>", "")
-                val newHtml = oldHtml.replace(Constants.REPLACEMENT_MARKER_STRING, textToPaste + "<" + AztecCursorSpan.AZTEC_CURSOR_TAG + ">")
+                    val oldHtml = toPlainHtml().replace("<aztec_cursor>", "")
+                    val newHtml = oldHtml.replace(Constants.REPLACEMENT_MARKER_STRING, textToPaste + "<" + AztecCursorSpan.AZTEC_CURSOR_TAG + ">")
 
-                fromHtml("<p>$newHtml</p>", false)
-                inlineFormatter.joinStyleSpans(0, length())
+                    fromHtml(newHtml, false)
+                    inlineFormatter.joinStyleSpans(0, length())
+                }
             }
         }
     }
@@ -1713,7 +1749,7 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
     }
 
     @SuppressLint("InflateParams")
-    fun showLinkDialog(presetUrl: String = "", presetAnchor: String = "", presetOpenInNewWindow: String = "" ) {
+    fun showLinkDialog(presetUrl: String = "", presetAnchor: String = "", presetOpenInNewWindow: String = "") {
         val urlAndAnchor = linkFormatter.getSelectedUrlWithAnchor()
 
         val url = if (TextUtils.isEmpty(presetUrl)) urlAndAnchor.first else presetUrl
