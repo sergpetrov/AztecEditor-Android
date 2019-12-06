@@ -1642,18 +1642,10 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
 
         if (clip != null) {
             if (onCopyPasteListener != null) {
-                disableTextChangedListener()
-
                 val length = text.length
                 if (min == 0 &&
                         (max == length || (length == 1 && text.toString() == Constants.END_OF_BUFFER_MARKER_STRING))) {
                     setText("")
-                } else {
-                    // prevent changes here from triggering the crash preventer
-                    disableCrashPreventerInputFilter()
-                    editable.delete(min, max)
-                    editable.insert(min, "")
-                    enableCrashPreventerInputFilter()
                 }
 
                 if (clip.itemCount > 0) {
