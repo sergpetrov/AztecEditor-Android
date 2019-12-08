@@ -1572,6 +1572,12 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
         var clipboardIdentifier = resources.getIdentifier("android:id/clipboard", "id", context.packageName)
 
         when (id) {
+            android.R.id.selectAll -> {
+                // TODO it's needed to avoid a crash for empty text selection
+                return if (text.toString() != Constants.END_OF_BUFFER_MARKER_STRING) {
+                    super.onTextContextMenuItem(id)
+                } else true
+            }
             android.R.id.paste -> paste(text, min, max)
             android.R.id.pasteAsPlainText -> paste(text, min, max, true)
             android.R.id.copy -> {
