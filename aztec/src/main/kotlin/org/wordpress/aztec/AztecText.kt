@@ -519,31 +519,31 @@ open class AztecText : AppCompatEditText, TextWatcher, UnknownHtmlSpan.OnUnknown
             temp
         }
 
-        //software keyboard InputFilter(s) below
-       /* TODO unnecessary now because it breaks style of empty block after paste action
-       val emptyEditTextBackspaceDetector = InputFilter { source, start, end, dest, dstart, dend ->
-            if (selectionStart == 0 && selectionEnd == 0
-                    && end == 0 && start == 0
-                    && dstart == 0 && dend == 0
-                    && !isHandlingBackspaceEvent) {
-                isHandlingBackspaceEvent = true
+        // software keyboard InputFilter(s) below
+        /* TODO unnecessary now because it breaks style of empty block after paste action
+        val emptyEditTextBackspaceDetector = InputFilter { source, start, end, dest, dstart, dend ->
+             if (selectionStart == 0 && selectionEnd == 0
+                     && end == 0 && start == 0
+                     && dstart == 0 && dend == 0
+                     && !isHandlingBackspaceEvent) {
+                 isHandlingBackspaceEvent = true
 
-                // Prevent the forced backspace from being added to the history stack
-                consumeHistoryEvent = true
+                 // Prevent the forced backspace from being added to the history stack
+                 consumeHistoryEvent = true
 
-                handleBackspaceAndEnter(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL))
-                isHandlingBackspaceEvent = false
-            }
-            source
-        }
+                 handleBackspaceAndEnter(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL))
+                 isHandlingBackspaceEvent = false
+             }
+             source
+         }
 
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O || Build.VERSION.SDK_INT == Build.VERSION_CODES.O_MR1) {
-            // dynamicLayoutCrashPreventer needs to be first in array as these are going to be chained when processed
-            filters = arrayOf(dynamicLayoutCrashPreventer, emptyEditTextBackspaceDetector)
-        } else {
-            filters = arrayOf(emptyEditTextBackspaceDetector)
-        }
-         */
+         if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O || Build.VERSION.SDK_INT == Build.VERSION_CODES.O_MR1) {
+             // dynamicLayoutCrashPreventer needs to be first in array as these are going to be chained when processed
+             filters = arrayOf(dynamicLayoutCrashPreventer, emptyEditTextBackspaceDetector)
+         } else {
+             filters = arrayOf(emptyEditTextBackspaceDetector)
+         }
+          */
     }
 
     private fun handleBackspaceAndEnter(event: KeyEvent): Boolean {
